@@ -12,8 +12,8 @@ class Space:
         i = 0
         
         for i in range(self.starnumb):
-            x = random.randrange(-(self.size/2)*640, self.size*640)
-            y = random.randrange(-(self.size/2)*360, self.size*360)
+            x = random.randrange(-(self.size-1)*640, self.size*640)
+            y = random.randrange(-(self.size-1)*360, self.size*360)
             self.stars[[i],[0]]=x
             self.stars[[i],[1]]=y
 
@@ -23,6 +23,9 @@ class Space:
         i = 0
         for i in range(self.starnumb):
             x= self.stars[[i],[0]] + velx
+            self.stars[[i],[0]] = x
             y= self.stars[[i],[1]] + vely
-            pygame.draw.circle(screen, (245,240,220), (int(x), int(y)), 3, 0)
+            self.stars[[i],[1]] = y
+            if (x >= 0 and x < 640 and y >= 0 and y < 360):
+                pygame.draw.circle(screen, (245,240,220), (int(x), int(y)), 3, 0)
             i += 1
