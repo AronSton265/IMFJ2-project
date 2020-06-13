@@ -49,6 +49,12 @@ class Space:
             self.Planets[i].paint(screen, velx, vely)
             i += 1
 
-    def calcGrav(self):
-        print(self.Planets[0].coord[0])
+    def checkifInside(self, enteties, entetienumb, ship):
+        i=0
+        for i in range(entetienumb):
+            check = enteties[i].checkifInsede(ship)
+            if check:
+                return True
+
+        return False
 

@@ -1,5 +1,6 @@
 import pygame
 import pygame.freetype
+import math
 from space import *
 
 # Define a main function, just to keep things nice and tidy
@@ -20,14 +21,15 @@ def main():
     vely = 0
     tempvelx = 0
     tempvely = 0
-    maxspead = 8
+    maxspead = 10
     densidade = 120
     correntcoord = [0,0]
+    densplaneta = 2700
+    constgrav = 0.00000006
     #maxcoord = [((size+1)*res[0])/2,(size+1)*res[1]]
     space = Space(size, screen, res, densidade)
     space.Background()
     space.createPlanets()
-    space.calcGrav()
     while (True):
         pygame.time.delay(10)
         # Process OS events
@@ -56,6 +58,9 @@ def main():
         elif (vely < -maxspead):
             vely = -maxspead
 
+        Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
+        print(Gravidade)
+
         correntcoord[0] = correntcoord[0] - velx
         correntcoord[1] = correntcoord[1] - vely
 
@@ -68,10 +73,19 @@ def main():
             tempvely = vely
         else:
             tempvely = 0
-        #if ((maxcoord[0]-correntcoord[0]) > maxcoord[0]-200):
+
+        tempvelx -= int(Gravidade[0])
+        tempvely -= int(Gravidade[1])
+        #print(space.Planets[0].coord)
+
         # Clears the screen with a very dark blue (0, 0, 20)
         screen.fill((0,0,20))
-
+        if space.checkifInside(space.Planets, space.planetnumb, [res[0]/2, res[1]/2]):
+            print("insede")
+            tempvelx= 0
+            tempvely= 0
+        print(tempvelx)
+        print(tempvely)
         space.Paint(screen, tempvelx, tempvely)
         createShip(res[0]/2, res[1]/2, 20, screen, tempvelx, tempvely)
         #pygame.draw.circle(screen, (245,0,0), (200, 200), 40, 0)
@@ -121,8 +135,26 @@ def createShip(originx, originy, size, screen, velx, vely):
             
         pygame.draw.polygon(screen, (151,151,156), [(A[0],A[1]), (B[0],B[1]), (C[0],C[1])], 0)
 
+def aplayGrav(originx, originy, size, densidade, constGravitacional, space):
+    i=0
+    G=[0,0]
+    for i in range(space.planetnumb):
+        temp = calcGrav(originx, originy, size, densidade, space.Planets[i], constGravitacional)
+        G[0] += temp[0]
+        G[1] += temp[1]
+    return G
 
-    #def calcGrav(originx, originy, Space):
-    #    space.Planest[0].coord
+def calcGrav(originx, originy, size, densidade, planet, constGravitacional):
+    dis = math.sqrt( (originx-planet.coord[0])**2 + (originy-planet.coord[1])**2 )
+    f = constGravitacional*( massCirc(planet.size, densidade)*(((size**2)-((size-1)**2))*7874 )/(dis**2) )
+    F = [f*(planet.coord[0]-originx)/(math.sqrt((planet.coord[0]-originx)**2 + (planet.coord[1]-originy)**2 )) , f*(planet.coord[1]-originy)/(math.sqrt((planet.coord[0]-originx)**2 + (planet.coord[1]-originy)**2 ))]
+    return F
+
+def massCirc(raio, densidade):
+    return areaCirc(raio)*densidade
+
+def areaCirc(raio):
+    return (raio**2)*math.pi
+
 # Run the main function
 main()

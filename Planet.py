@@ -12,4 +12,10 @@ class Planet:
         pygame.draw.circle(screen, (60,179,113), (self.coord[0] + velx, self.coord[1] + vely), self.size, 0)
         self.coord[0] += velx
         self.coord[1] += vely
+
+    def checkifInsede(self, ship):
+        if(ship[0]-self.size-10 < self.coord[0]  and  self.coord[0] < ship[0]+self.size+10):
+            if(ship[1]-self.size-10 < self.coord[1]  and  self.coord[1] < ship[1]+self.size+10):
+                return True
+        return False
         
