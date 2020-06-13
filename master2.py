@@ -16,7 +16,6 @@ def main():
     screen = pygame.display.set_mode(res)
     # Game loop, runs forever
     size = 3
-    sizeShip = 20
     mov = 1
     rot= 0.1
     speed = 0
@@ -28,7 +27,7 @@ def main():
     maxvelang = 10*math.pi
     densidade = 120
     correntcoord = [0,0]
-    front = [0,sizeShip]
+    front = [0,size]
     densplaneta = 2700
     constgrav = 0.00000006
     #maxcoord = [((size+1)*res[0])/2,(size+1)*res[1]]
@@ -46,30 +45,46 @@ def main():
 
         keys = pygame.key.get_pressed()
         if (keys[pygame.K_a]):
+            #velx=velx+mov
             velang -= rot
+            print("to the left")
         if (keys[pygame.K_d]):
+            #velx=velx-mov
             velang += rot
+            print("to the right")
         if (keys[pygame.K_s]):
             speed=speed-mov
+            print("back")
         if (keys[pygame.K_w]):
             speed=speed+mov        
+            print("foward")
         
         if (velang > maxvelang):
             velang = maxvelang
+            print("slow down")
         elif (velang < -maxvelang):
             velang = -maxvelang
+            print("slow down")
 
+        print(velang*0.2)
         front = rotateShip(front, velang)
         vel = calcVel(front, speed, vel)
+        print(velang)
 
         if (vel[0] > maxspead):
             vel[0] = maxspead
+            print("slow down")
         elif (vel[0] < -maxspead):
             vel[0] = -maxspead
+            print("slow down")
         if (vel[1] > maxspead):
             vel[1] = maxspead
+            print("slow down")
         elif (vel[1] < -maxspead):
             vel[1] = -maxspead
+            print("slow down")
+
+        print(vel)
 
         #Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
 
@@ -96,7 +111,7 @@ def main():
             tempvely= 0
 
         space.Paint(screen, tempvelx, tempvely)
-        createShip(res[0]/2, res[1]/2, sizeShip, screen, front)
+        createShip(res[0]/2, res[1]/2, 20, screen, tempvelx, tempvely)
         #pygame.draw.circle(screen, (245,0,0), (200, 200), 40, 0)
         #planet 20min max 100
         #sun 150min 300max
@@ -113,31 +128,46 @@ def calcVel(vector, acelaracao, velocidade):
     velocidade[1] += acelaracao * (vector[1]/math.sqrt(vector[0]**2 + vector[1]**2))
     return velocidade
 
-def createShip(originx, originy, size, screen, front):
-    perp=calcVecPerp(front, size/2)
-    print(front)
-    A= [0,0]
-    A[0] = originx - front[0]
-    A[1] = originy - front[1]
+def createShip(originx, originy, size, screen, velx, vely):
+        
+        if (vely >= 0):
+            if (velx < 0):
+                A=[originx + size, originy - size]
+                B=[originx, originy + size]
+                C=[originx - size, originy]
+            elif (velx > 0):
+                A=[originx - size, originy - size]
+                B=[originx, originy + size]
+                C=[originx + size, originy]
+            else:
+                A=[originx, originy - size]
+                B=[originx + (size/2), originy + size]
+                C=[originx - (size/2), originy + size]
+            
+        else:
+            if (velx < 0):
+                A=[originx + size, originy + size]
+                B=[originx, originy - size]
+                C=[originx - size, originy]
+            elif (velx > 0):
+                A=[originx - size, originy + size]
+                B=[originx, originy - size]
+                C=[originx + size, originy]
+            else:
+                A=[originx, originy + size]
+                B=[originx + (size/2), originy - size]
+                C=[originx - (size/2), originy - size]
 
-    B= [0,0]
-    B[0] = originx + front[0] + perp[0]
-    B[1] = originy + front[1] + perp[1]
-
-    C= [0,0]
-    C[0] = originx + front[0] - perp[0]
-    C[1] = originy + front[1] - perp[1]
-  
-    pygame.draw.polygon(screen, (151,151,156), [(A[0],A[1]), (B[0],B[1]), (C[0],C[1])], 0)
-
-def calcVecPerp(vector, lenght):
-    x=-1
-    y=vector[0]/vector[1]
-    magnitude = math.sqrt(x**2 + y**2)
-    newx = lenght * (x/magnitude)
-    newy = lenght * (y/magnitude)
-    return [newx, newy]
-
+        if (vely == 0 and velx > 0):
+            A=[originx - size, originy]
+            B=[originx + size, originy + (size/2)]
+            C=[originx + size, originy - (size/2)]
+        elif (vely == 0 and velx < 0):
+            A=[originx + size, originy]
+            B=[originx - size, originy + (size/2)]
+            C=[originx - size, originy - (size/2)]
+            
+        pygame.draw.polygon(screen, (151,151,156), [(A[0],A[1]), (B[0],B[1]), (C[0],C[1])], 0)
 
 def aplayGrav(originx, originy, size, densidade, constGravitacional, space):
     i=0
