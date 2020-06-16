@@ -45,11 +45,24 @@ def main():
     densplaneta = 2700
     #constant for the gravaty calcolations
     constgrav = 0.00000006
+    
     #--creation of the object space--
     space = Space(size, screen, res, densidade)
     space.Background()
     space.createPlanets()
     #--------------------------------
+
+    #--changes the planets to make sure one is show--
+    space.Planets[0].coord = [100, 100]
+    space.Planets[0].size = 100
+    i = 0
+    for i in range(1, space.planetnumb):
+        print(i)
+        space.Planets[i].size = 0
+        i +=1
+    print(space.Planets[0].size)
+    #------------------------------------------------
+
     # Game loop, runs forever
     while (True):
         pygame.time.delay(10)
@@ -89,8 +102,7 @@ def main():
         vel = calcVel(front, speed, vel) 
 
         #calculates the gravaty of all the planest in the object space
-        Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
-
+        Gravidade = aplayGrav(coord[0], coord[1], size, densplaneta, constgrav, space)
 
         #--checks if the ship will leave the player area, if so the speed will became 0--
         correntcoord[0] = coord[0] - vel[0]

@@ -16,4 +16,4 @@ Neste projeto foi criado 5 paginas de codigo , dois mains e tres classes.
     Igual ao planet mas o seu tamanho e maior e a sau cor rodeia os amarelos
 ---
 ### Notas
-devido a natoreza aleatoria da cracao de planetas e sois, pode ocorrer a situacao em que se comeca a aplicacao dentro de um deles, nesse caso tera de reiniciar a mesma. No caso especifico do Main tambem pode ocorrer a situacao em que nao se ve qualquer planeta na janela, eles existem e afetam o player apenas nao estao na area visivel, se desejar ver em contreto como estes o afetam melhor recomenda-se a reiniciar o programa.
+Devido a natoreza aleatoria da cracao de planetas e sois, pode ocorrer a situacao em que se comeca a aplicacao dentro de um deles, nesse caso tera de reiniciar a mesma. No caso especifico do Main o tamnho de todos os planetas exeto on e mudado para 0 e a posicao de um dos planetas e especifico. Para que se possa avaliar melhor o programa 
