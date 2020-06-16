@@ -14,23 +14,26 @@ def main():
     res = (848, 480)
     # Create a window and a display surface
     screen = pygame.display.set_mode(res)
+    my_font = pygame.freetype.Font("NotoSans-Regular.ttf", 24)
     # Game loop, runs forever
-    size = 3
-    mov = 1
-    rot= 0.1
+    coord =[res[0]/2, res[1]/2]
+    correntcoord = [0,0]
+    crashed = False
+    size = 2
+    sizeShip = 20
+    mov = 0.25
+    rot= 0.05
     speed = 0
     vel = [0,0]
     velang = 0
     tempvelx = 0
     tempvely = 0
-    maxspead = 10
-    maxvelang = 10*math.pi
+    maxspead = 20
+    maxvelang = 5*math.pi
     densidade = 120
-    correntcoord = [0,0]
-    front = [0,size]
+    front = [0,sizeShip]
     densplaneta = 2700
     constgrav = 0.00000006
-    #maxcoord = [((size+1)*res[0])/2,(size+1)*res[1]]
     space = Space(size, screen, res, densidade)
     space.Background()
     space.createPlanets()
@@ -45,130 +48,113 @@ def main():
 
         keys = pygame.key.get_pressed()
         if (keys[pygame.K_a]):
-            #velx=velx+mov
             velang -= rot
-            print("to the left")
         if (keys[pygame.K_d]):
-            #velx=velx-mov
             velang += rot
-            print("to the right")
         if (keys[pygame.K_s]):
             speed=speed-mov
-            print("back")
         if (keys[pygame.K_w]):
             speed=speed+mov        
-            print("foward")
         
         if (velang > maxvelang):
             velang = maxvelang
-            print("slow down")
         elif (velang < -maxvelang):
             velang = -maxvelang
-            print("slow down")
 
-        print(velang*0.2)
-        front = rotateShip(front, velang)
-        vel = calcVel(front, speed, vel)
-        print(velang)
+        if (speed > maxspead):
+            speed = maxspead
+        elif (speed < -maxspead):
+            speed = -maxspead
+        
+        front = rotateShip(front, velang, sizeShip)
+        vel = calcVel(front, speed, vel) 
 
         if (vel[0] > maxspead):
             vel[0] = maxspead
-            print("slow down")
         elif (vel[0] < -maxspead):
             vel[0] = -maxspead
-            print("slow down")
         if (vel[1] > maxspead):
             vel[1] = maxspead
-            print("slow down")
         elif (vel[1] < -maxspead):
             vel[1] = -maxspead
-            print("slow down")
 
-        print(vel)
+        Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
 
-        #Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
+        correntcoord[0] = coord[0] - vel[0]
+        correntcoord[1] = coord[1] - vel[1]
 
-        correntcoord[0] = correntcoord[0] - vel[0]
-        correntcoord[1] = correntcoord[1] - vel[1]
-
-        if (correntcoord[0] < (size-1)*res[0]  and  correntcoord[0] > -(size-1)*res[0]):
+        if (correntcoord[0] < (size-1)*res[0]  and  correntcoord[0] > 0):
             tempvelx = int(vel[0])
         else:
             tempvelx = 0
-
-        if (correntcoord[1] < (size-1)*res[1]  and  correntcoord[1] > -(size-1)*res[1]):
+        if (correntcoord[1] < (size-1)*res[1]  and  correntcoord[1] > 0):
             tempvely = int(vel[1])
         else:
             tempvely = 0
 
-        #tempvelx -= int(Gravidade[0])
-        #tempvely -= int(Gravidade[1])
+        tempvelx -= int(Gravidade[0])
+        tempvely -= int(Gravidade[1])
 
         # Clears the screen with a very dark blue (0, 0, 20)
         screen.fill((0,0,20))
-        if space.checkifInside(space.Planets, space.planetnumb, [res[0]/2, res[1]/2]):
+        if space.checkifInside(space.Planets, space.planetnumb, [coord[0], coord[1]]):
             tempvelx= 0
             tempvely= 0
+            crashed = True 
 
-        space.Paint(screen, tempvelx, tempvely)
-        createShip(res[0]/2, res[1]/2, 20, screen, tempvelx, tempvely)
+        space.Paint(screen, 0, 0)
+        coord[0] -= tempvelx
+        coord[1] -= tempvely
+        createShip(coord[0], coord[1], sizeShip, screen, front)
+        if crashed: my_font.render_to(screen, (150, 150), "You crashed", (255, 0, 0),  None, pygame.freetype.STYLE_DEFAULT, 0, 100)
         #pygame.draw.circle(screen, (245,0,0), (200, 200), 40, 0)
         #planet 20min max 100
         #sun 150min 300max
         #black hole 10min 40max
         pygame.display.flip()
 
-def rotateShip(vector, w):
-    vector[0] = math.cos(w*0.2)*vector[0] - math.sin(w*0.2)*vector[1]
-    vector[1] = math.sin(w*0.2)*vector[0] + math.cos(w*0.2)*vector[1]
+#rodar a nave
+#depois de alguns teste descobri que o vetor ia ficando cada vez mais pequeno emtao para que isso nao aconteca torno o vetor num unitario e multiplicou pelo tamanho original
+def rotateShip(vector, w, lenght):
+    x = math.cos(w*0.2)*vector[0] - math.sin(w*0.2)*vector[1]
+    y = math.sin(w*0.2)*vector[0] + math.cos(w*0.2)*vector[1]
+    magnitude = math.sqrt(x**2 + y**2)
+    vector[0] = lenght * (x/magnitude)
+    vector[1] = lenght * (y/magnitude)
     return vector
 
 def calcVel(vector, acelaracao, velocidade):
-    velocidade[0] += acelaracao * (vector[0]/math.sqrt(vector[0]**2 + vector[1]**2))
-    velocidade[1] += acelaracao * (vector[1]/math.sqrt(vector[0]**2 + vector[1]**2))
+    velocidade[0] = acelaracao * (vector[0]/math.sqrt(vector[0]**2 + vector[1]**2))
+    velocidade[1] = acelaracao * (vector[1]/math.sqrt(vector[0]**2 + vector[1]**2))
     return velocidade
 
-def createShip(originx, originy, size, screen, velx, vely):
-        
-        if (vely >= 0):
-            if (velx < 0):
-                A=[originx + size, originy - size]
-                B=[originx, originy + size]
-                C=[originx - size, originy]
-            elif (velx > 0):
-                A=[originx - size, originy - size]
-                B=[originx, originy + size]
-                C=[originx + size, originy]
-            else:
-                A=[originx, originy - size]
-                B=[originx + (size/2), originy + size]
-                C=[originx - (size/2), originy + size]
-            
-        else:
-            if (velx < 0):
-                A=[originx + size, originy + size]
-                B=[originx, originy - size]
-                C=[originx - size, originy]
-            elif (velx > 0):
-                A=[originx - size, originy + size]
-                B=[originx, originy - size]
-                C=[originx + size, originy]
-            else:
-                A=[originx, originy + size]
-                B=[originx + (size/2), originy - size]
-                C=[originx - (size/2), originy - size]
+#desenhar a nave
+def createShip(originx, originy, size, screen, front):
+    perp=calcVecPerp(front, size/2)
 
-        if (vely == 0 and velx > 0):
-            A=[originx - size, originy]
-            B=[originx + size, originy + (size/2)]
-            C=[originx + size, originy - (size/2)]
-        elif (vely == 0 and velx < 0):
-            A=[originx + size, originy]
-            B=[originx - size, originy + (size/2)]
-            C=[originx - size, originy - (size/2)]
-            
-        pygame.draw.polygon(screen, (151,151,156), [(A[0],A[1]), (B[0],B[1]), (C[0],C[1])], 0)
+    A= [0,0]
+    A[0] = originx - front[0]
+    A[1] = originy - front[1]
 
+    B= [0,0]
+    B[0] = originx + front[0] + perp[0]
+    B[1] = originy + front[1] + perp[1]
+
+    C= [0,0]
+    C[0] = originx + front[0] - perp[0]
+    C[1] = originy + front[1] - perp[1]
+  
+    pygame.draw.polygon(screen, (151,151,156), [(A[0],A[1]), (B[0],B[1]), (C[0],C[1])], 0)
+
+def calcVecPerp(vector, lenght):
+    x=-1
+    y=vector[0]/vector[1]
+    magnitude = math.sqrt(x**2 + y**2)
+    newx = lenght * (x/magnitude)
+    newy = lenght * (y/magnitude)
+    return [newx, newy]
+
+#calculos da gravidade
 def aplayGrav(originx, originy, size, densidade, constGravitacional, space):
     i=0
     G=[0,0]

@@ -2,6 +2,7 @@ import pygame
 import random
 import numpy as np
 from Planet import *
+from Sun import *
 
 class Space:
     def __init__(self, size, screen, res, densi):
@@ -9,8 +10,13 @@ class Space:
         self.den=densi
         self.starnumb = size*size*self.den
         self.planetnumb = int((self.den*size)/20)
+        self.sunnumb = int(self.planetnumb/8)
+        print(self.sunnumb)
         self.stars = np.zeros((self.starnumb, 2))
+        self.Suns = []
         self.Planets = []
+        self.planetsCreated = False
+        self.sunsCreated = False
         self.res = res
 
     def Background(self):
@@ -32,6 +38,17 @@ class Space:
             temp= Planet(x, y)
             self.Planets.append(temp)
             i += 1
+        self.planetsCreated = True
+
+    def createSuns(self):
+        i = 0
+        for i in range(self.sunnumb):
+            x = random.randrange(-(self.size-1)*self.res[0], self.size*self.res[0])
+            y = random.randrange(-(self.size-1)*self.res[1], self.size*self.res[1])
+            temp= Sun(x, y)
+            self.Suns.append(temp)
+            i += 1
+        self.sunsCreated = True
 
 
     def Paint(self, screen, velx, vely):
@@ -44,10 +61,18 @@ class Space:
             if (x >= 0 and x < self.res[0] and y >= 0 and y < self.res[1]):
                 pygame.draw.circle(screen, (245,240,220), (int(x), int(y)), 3, 0)
             i += 1
-        i = 0
-        for i in range(self.planetnumb):
-            self.Planets[i].paint(screen, velx, vely)
-            i += 1
+        
+        if self.planetsCreated:
+            i = 0
+            for i in range(self.planetnumb):
+                self.Planets[i].paint(screen, velx, vely)
+                i += 1
+        
+        if self.sunsCreated:
+            i=0
+            for i in range(self.sunnumb):
+                self.Suns[i].paint(screen, velx, vely)
+                i += 1
 
     def checkifInside(self, enteties, entetienumb, ship):
         i=0
