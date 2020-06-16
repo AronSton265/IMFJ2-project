@@ -16,10 +16,8 @@ def main():
     screen = pygame.display.set_mode(res)
     my_font = pygame.freetype.Font("NotoSans-Regular.ttf", 24)
     # Game loop, runs forever
-    coord =[res[0]/2, res[1]/2]
-    correntcoord = [0,0]
     crashed = False
-    size = 2
+    size = 3
     sizeShip = 20
     mov = 0.25
     rot= 0.05
@@ -31,12 +29,14 @@ def main():
     maxspead = 20
     maxvelang = 5*math.pi
     densidade = 120
+    correntcoord = [0,0]
     front = [0,sizeShip]
     densplaneta = 2700
     constgrav = 0.00000006
     space = Space(size, screen, res, densidade)
     space.Background()
     space.createPlanets()
+    space.createSuns()
     while (True):
         pygame.time.delay(10)
         # Process OS events
@@ -60,14 +60,13 @@ def main():
             velang = maxvelang
         elif (velang < -maxvelang):
             velang = -maxvelang
-
         if (speed > maxspead):
             speed = maxspead
         elif (speed < -maxspead):
             speed = -maxspead
-        
+
         front = rotateShip(front, velang, sizeShip)
-        vel = calcVel(front, speed, vel) 
+        vel = calcVel(front, speed, vel)
 
         if (vel[0] > maxspead):
             vel[0] = maxspead
@@ -80,37 +79,30 @@ def main():
 
         Gravidade = aplayGrav(res[0]/2, res[1]/2, size, densplaneta, constgrav, space)
 
-        correntcoord[0] = coord[0] - vel[0]
-        correntcoord[1] = coord[1] - vel[1]
 
-        if (correntcoord[0] < (size-1)*res[0]  and  correntcoord[0] > 0):
-            tempvelx = int(vel[0])
+        if (correntcoord[0] - vel[0] - int(Gravidade[0]) < (size-1)*res[0]  and  correntcoord[0] - vel[0] - int(Gravidade[0]) > -(size-1)*res[0]):
+            tempvelx = int(vel[0])-int(Gravidade[0])
         else:
             tempvelx = 0
-        if (correntcoord[1] < (size-1)*res[1]  and  correntcoord[1] > 0):
-            tempvely = int(vel[1])
+
+        if (correntcoord[1] - vel[1] - int(Gravidade[1]) < (size-1)*res[1]  and  correntcoord[1] - vel[1] - int(Gravidade[1]) > -(size-1)*res[1]):
+            tempvely = int(vel[1])-int(Gravidade[1])
         else:
             tempvely = 0
 
-        tempvelx -= int(Gravidade[0])
-        tempvely -= int(Gravidade[1])
+        correntcoord[0] = correntcoord[0] - vel[0] - int(Gravidade[0])
+        correntcoord[1] = correntcoord[1] - vel[1] - int(Gravidade[1])
 
         # Clears the screen with a very dark blue (0, 0, 20)
         screen.fill((0,0,20))
-        if space.checkifInside(space.Planets, space.planetnumb, [coord[0], coord[1]]):
+        if (space.checkifInside(space.Planets, space.planetnumb, [res[0]/2, res[1]/2]) or space.checkifInside(space.Suns, space.sunnumb, [res[0]/2, res[1]/2])):
             tempvelx= 0
             tempvely= 0
             crashed = True 
 
-        space.Paint(screen, 0, 0)
-        coord[0] -= tempvelx
-        coord[1] -= tempvely
-        createShip(coord[0], coord[1], sizeShip, screen, front)
+        space.Paint(screen, tempvelx, tempvely)
+        createShip(res[0]/2, res[1]/2, sizeShip, screen, front)
         if crashed: my_font.render_to(screen, (150, 150), "You crashed", (255, 0, 0),  None, pygame.freetype.STYLE_DEFAULT, 0, 100)
-        #pygame.draw.circle(screen, (245,0,0), (200, 200), 40, 0)
-        #planet 20min max 100
-        #sun 150min 300max
-        #black hole 10min 40max
         pygame.display.flip()
 
 #rodar a nave
@@ -160,6 +152,11 @@ def aplayGrav(originx, originy, size, densidade, constGravitacional, space):
     G=[0,0]
     for i in range(space.planetnumb):
         temp = calcGrav(originx, originy, size, densidade, space.Planets[i], constGravitacional)
+        G[0] += temp[0]
+        G[1] += temp[1]
+    i=0
+    for i in range(space.sunnumb):
+        temp = calcGrav(originx, originy, size, densidade*1.5, space.Suns[i], constGravitacional)
         G[0] += temp[0]
         G[1] += temp[1]
     return G

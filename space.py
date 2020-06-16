@@ -8,17 +8,26 @@ class Space:
     def __init__(self, size, screen, res, densi):
         self.size = size
         self.den=densi
+        #number of stars
         self.starnumb = size*size*self.den
+        #number of planets if any
         self.planetnumb = int((self.den*size)/20)
+        #number of suns if any
         self.sunnumb = int(self.planetnumb/8)
-        print(self.sunnumb)
+        #array with the position of the stars
         self.stars = np.zeros((self.starnumb, 2))
+        #array with suns
         self.Suns = []
+        #array with planets
         self.Planets = []
+        #variable to control if the planets were created
         self.planetsCreated = False
+        #variable to control if the suns were created
         self.sunsCreated = False
+        #resolution of the window
         self.res = res
 
+#creates the starts(just background)
     def Background(self):
         i = 0
         
@@ -30,6 +39,7 @@ class Space:
 
             i += 1
 
+#creates the planets
     def createPlanets(self):
         i = 0
         for i in range(self.planetnumb):
@@ -40,6 +50,7 @@ class Space:
             i += 1
         self.planetsCreated = True
 
+#creates the suns
     def createSuns(self):
         i = 0
         for i in range(self.sunnumb):
@@ -50,7 +61,7 @@ class Space:
             i += 1
         self.sunsCreated = True
 
-
+#paints every object
     def Paint(self, screen, velx, vely):
         i = 0
         for i in range(self.starnumb):
@@ -74,6 +85,7 @@ class Space:
                 self.Suns[i].paint(screen, velx, vely)
                 i += 1
 
+#checks if the ship is insede any object in this class
     def checkifInside(self, enteties, entetienumb, ship):
         i=0
         for i in range(entetienumb):
